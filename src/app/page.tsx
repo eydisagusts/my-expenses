@@ -1,101 +1,136 @@
-import Image from "next/image";
+'use client';
+import { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [text, setText] = useState("");
+  const [cost, setCost] = useState("");
+  const [stats, setStats] = useState(0);
+  const [count, setCount] = useState(0);
+  const [notifications, setNotifications] = useState<{ id: string; text: string; cost: string }[]>([]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+  function handleAdd() {
+    const costValue = Number.parseFloat(cost);
+    if (!Number.isNaN(costValue)) {
+      setStats(stats + costValue);
+      setCount(count + 1);
+      setNotifications([
+        ...notifications, 
+        { id: uuidv4(), text, cost }
+      ]);
+      setText("");
+      setCost("");
+    }
+  }
+
+  function handleCloseNotification(id) {
+    setNotifications(notifications.filter(notification => notification.id !== id));
+  }
+
+  return (
+    <div>
+      <NameInput text={text} setText={setText} />
+      <CostInput cost={cost} setCost={setCost} handleAdd={handleAdd} />
+      <Stats stats={stats} count={count} />
+      <Count count={count} />
+      <div className='fixed top-5 right-5 space-y-4'>
+        {notifications.map((notification) => (
+          <Notification
+            key={notification.id}
+            notification={notification}
+            onClose={() => handleCloseNotification(notification.id)}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function NameInput({ text, setText }) {
+  return (
+    <div className='text-black'>
+      <div>
+        <h1 className='text-green-300 text-6xl p-10 ml-20'>Add Expense</h1>
+      </div>
+      <div>
+        <p className='inline text-white text-3xl ml-36'>Name</p>
+        <input
+          id="name-input"
+          name="name"
+          className='ml-10 gap-8 px-8 py-1 border-2'
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+      </div>
+    </div>
+  );
+}
+
+function CostInput({ cost, setCost, handleAdd }) {
+  return (
+    <div className='text-black mt-4'>
+      <p className='inline text-white text-3xl ml-36'>Cost</p>
+      <input
+        id="cost-input"
+        name="cost"
+        className='ml-14 gap-8 px-8 py-1 border-2'
+        value={cost}
+        onChange={(e) => setCost(e.target.value)}
+      />
+      <div>
+        <button
+          className='text-black text-4xl ml-36 mt-10 border-2 border-white bg-white p-1'
+          type='button'
+          onClick={handleAdd}
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <p>Add</p>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Stats({ stats, count }) {
+  return (
+    <div>
+      <h2 className='text-green-300 text-6xl mt-10 ml-28'>Stats</h2>
+      <p className='ml-32 text-2xl mt-8'>Sum: {stats}</p>
+    </div>
+  );
+}
+
+function Count({ count }) {
+  return (
+    <div>
+      <p className='ml-32 text-2xl'>Count: {count}</p>
+    </div>
+  );
+}
+
+function Notification({ notification, onClose }) {
+  const [isClosing, setIsClosing] = useState(false);
+
+  function handleClose() {
+    setIsClosing(true);
+    setTimeout(onClose, 500);
+  }
+  return (
+    <div
+      className={`relative border-2 border-green-300 p-6 w-96 bg-gray-700 z-50 mt-20 mr-36
+        ${isClosing ? 'animate-fadeOut' : 'animate-fadeIn'}
+      `}
+    >
+      <button
+        className='absolute top-1 right-2 text-lg cursor-pointer text-red-600 font-bold'
+        type="button"
+        onClick={handleClose}
+      >
+        X
+      </button>
+      <div className='text-left'>
+        <p><span className='font-bold text-xl'>Name:</span> {notification.text}</p>
+        <p><span className='font-bold text-xl'>Cost:</span> {notification.cost}</p>
+      </div>
     </div>
   );
 }
